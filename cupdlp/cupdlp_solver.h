@@ -62,6 +62,14 @@ cupdlp_retcode LP_SolvePDHG(CUPDLPwork *pdhg, cupdlp_bool *ifChangeIntParam,
                             cupdlp_float *y_origin, cupdlp_bool ifSaveSol,
                             cupdlp_int *constraint_new_idx);
 
+cupdlp_retcode LP_SolvePDHG_New(CUPDLPwork *pdhg, cupdlp_bool *ifChangeIntParam,
+                            cupdlp_int *intParam,
+                            cupdlp_bool *ifChangeFloatParam,
+                            cupdlp_float *floatParam,
+                            cupdlp_float *x_origin, cupdlp_int nCols_origin,
+                            cupdlp_float *y_origin,
+                            cupdlp_int *constraint_new_idx);
+
 #ifdef __cplusplus
 }
 #endif

@@ -26,6 +26,15 @@ cmake --build . --target plc
 ```
 then you can find the binary `plc` in the folder `build/bin/`.
 
+To build the python extension `culpy`:
+```shell
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_CUDA=ON ..
+cmake --build . --target culpy
+```
+then you can find the dynamic library `culpy.so`/`culpy.pyd` in the folder `build/lib/`.
+
 When using the release mode, we suggest the following options,
 ```
 cmake -DBUILD_CUDA=ON \
@@ -35,6 +44,8 @@ cmake -DBUILD_CUDA=ON \
 ```  
 
 ## Usage
+
+### Executable Binary
 
 Usage example: set `nIterLim` to `5000` and solve.
 
@@ -63,8 +74,30 @@ Usage example: set `nIterLim` to `5000` and solve.
 <!-- |`iScalingMethod`|`int`|`0-5`|`0`|Which scaling to use: 0-Column, 1-Row, 2-Col&Row, 3-Ruiz, 4-Col&Row&Obj, 5-Ruiz| -->
 <!-- |``|``|``|``|| -->
 
+### Python Extension
 
+Copy the lib `culpy.so`/`culpy.pyd` to (somewhere python can find). Then you can import `culpy` in Python. Currently there is only one function, `solve` in `culpy`, whose signature is given by
+```python
+def solve(
+    nRows: int, nCols: int, nnz: int, nEqs: int,
+    colMatBeg: np.ndarray, colMatIdx: np.ndarray, colMatElem: np.ndarray,
+    b: np.ndarray, c: np.ndarray, params: dict[str, float | int],
+) -> Dict[str, Any]: ...
+```
+A `nRows x nCols` sparse matrix (`A`) with `nnz` nonzero elements is given by `colMatBeg`, `colMatIdx`, `colMatElem` in CSC format. `b` should have length `nRows` and `c` should have length `nCols`. The first `nEqs` rows of `A` and `b` give the equation constraints, while the following `(nRows - nEqs)` rows give the inequality constraints. All parameters (except `fname` and `fout`) in the previous section could be overwrite in the `params` dict.
 
+The result dictionary has the following items:
+- `status`
+- `primal_vars`: Numpy array format.
+- `dual_vars`: Numpy array format.
+- `pcost`
+- `solve_time`
+- `setup_time`
+- `num_iters`
+
+A simple example of calling `culpy` could be found in `py/culpy_test.py`.
+
+We recommend utilize the `culpy` package via `cvxpy` rather than call `solve` directly.
 
 
 ## The PDLP Algorithm

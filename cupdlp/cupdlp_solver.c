@@ -597,15 +597,18 @@ void PDHG_PostSolve(CUPDLPwork *pdhg, cupdlp_int nCols_origin,
 
   // extract x from (x, z)
   CUPDLP_COPY_VEC(x_origin, iterates->x->data, cupdlp_float, nCols_origin);
-
-  cupdlp_float *ytmp =
-      (cupdlp_float *)cupdlp_malloc(problem->nRows * sizeof(cupdlp_float));
-  CUPDLP_COPY_VEC(ytmp, iterates->y->data, cupdlp_float, problem->nRows);
-  // un-permute y
-  for (int i = 0; i < problem->nRows; i++) {
-    y_origin[i] = ytmp[constraint_new_idx[i]];
+  if (constraint_new_idx != cupdlp_NULL) {
+    cupdlp_float *ytmp =
+        (cupdlp_float *)cupdlp_malloc(problem->nRows * sizeof(cupdlp_float));
+    CUPDLP_COPY_VEC(ytmp, iterates->y->data, cupdlp_float, problem->nRows);
+    // un-permute y
+    for (int i = 0; i < problem->nRows; i++) {
+      y_origin[i] = ytmp[constraint_new_idx[i]];
+    }
+    cupdlp_free(ytmp);
+  } else {
+    CUPDLP_COPY_VEC(y_origin, iterates->y->data, cupdlp_float, problem->nRows);
   }
-  cupdlp_free(ytmp);
 }
 
 cupdlp_retcode LP_SolvePDHG(CUPDLPwork *pdhg, cupdlp_bool *ifChangeIntParam,
@@ -631,5 +634,29 @@ cupdlp_retcode LP_SolvePDHG(CUPDLPwork *pdhg, cupdlp_bool *ifChangeIntParam,
 
 exit_cleanup:
   PDHG_Destroy(&pdhg);
+  return retcode;
+}
+
+cupdlp_retcode LP_SolvePDHG_New(CUPDLPwork *pdhg, cupdlp_bool *ifChangeIntParam,
+                            cupdlp_int *intParam,
+                            cupdlp_bool *ifChangeFloatParam,
+                            cupdlp_float *floatParam,
+                            cupdlp_float *x_origin, cupdlp_int nCols_origin,
+                            cupdlp_float *y_origin,
+                            cupdlp_int *constraint_new_idx) {
+  cupdlp_retcode retcode = RETCODE_OK;
+
+  PDHG_PrintHugeCUPDHG();
+
+  CUPDLP_CALL(PDHG_SetUserParam(pdhg, ifChangeIntParam, intParam,
+                                ifChangeFloatParam, floatParam));
+
+  CUPDLP_CALL(PDHG_Solve(pdhg));
+  PDHG_PostSolve(pdhg, nCols_origin, constraint_new_idx, x_origin, y_origin);
+  // writeJson(fp, pdhg, x_origin, nCols_origin, y_origin, pdhg->problem->nRows,
+  //           ifSaveSol);
+
+exit_cleanup:
+  // PDHG_Destroy(&pdhg);
   return retcode;
 }
