@@ -76,7 +76,7 @@ Usage example: set `nIterLim` to `5000` and solve.
 
 ### Python Extension
 
-Copy the lib `culpy.so`/`culpy.pyd` to (somewhere python can find). Then you can import `culpy` in Python. Currently there is only one function, `solve` in `culpy`, whose signature is given by
+Copy the lib `culpy.so`/`culpy.pyd` to (somewhere python can find). Then you can import `culpy` in Python. Currently there is only one function, `solve`, in `culpy`, whose signature is given by
 ```python
 def solve(
     nRows: int, nCols: int, nnz: int, nEqs: int,
